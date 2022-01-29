@@ -16,9 +16,10 @@ class HelloMessageStack(core.Stack):
             handler="handler.handler",
             runtime=_lambda.Runtime.PYTHON_3_8,
         )
+        apigw.LambdaRestApi(scope=self, id="HelloMessageApi", handler=lambda_func)
 
-        api = apigw.RestApi(self, "HelloMessageApi")
-        api.root.add_method("POST", apigw.LambdaIntegration(lambda_func))
+        # api = apigw.RestApi(self, "HelloMessageApi")
+        # api.root.add_method("GET", apigw.LambdaIntegration(lambda_func))
 
 app = core.App()
 

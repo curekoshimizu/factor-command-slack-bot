@@ -4,8 +4,7 @@ import json
 
 def handler(event, content):
     try:
-        body = event.get("body")
-        body["message"] = "hello"
+        body = { "message": "hello" }
         status_code = 200
     except Exception as e:
         status_code = 500
