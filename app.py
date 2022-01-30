@@ -9,13 +9,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-class HelloMessageStack(core.Stack):
-
+class PrimeFactorizationMessageStack(core.Stack):
     def __init__(self, scope: core.App, name: str, **kwargs) -> None:
         super().__init__(scope, name, **kwargs)
 
         backend = DockerImageFunction(
-            scope=self, id='HelloMessageDocker', code=DockerImageCode.from_image_asset(
+            scope=self, id='PrimeFactorizationMessageDocker', code=DockerImageCode.from_image_asset(
                 directory='lambda',
             ), 
             memory_size=128,  # default 128MB
@@ -27,7 +26,7 @@ class HelloMessageStack(core.Stack):
 
 
         # backend = _lambda.Function(
-        #     self, "HelloMessageFunc",
+        #     self, "PrimeFactorizationMessageFunc",
         #     code=_lambda.Code.from_asset("lambda"),
         #     handler="handler.handler",
         #     runtime=_lambda.Runtime.PYTHON_3_8,
@@ -36,12 +35,12 @@ class HelloMessageStack(core.Stack):
         #         "SLACK_SIGNING_SECRET": os.environ["SLACK_SIGNING_SECRET"],
         #     },
         # )
-        apigw.LambdaRestApi(scope=self, id="HelloMessageApi", handler=backend)
+        apigw.LambdaRestApi(scope=self, id="PrimeFactorizationMessageApi", handler=backend)
 
 app = core.App()
 
-HelloMessageStack(
-    app, "HelloMessageStack",
+PrimeFactorizationMessageStack(
+    app, "PrimeFactorizationMessageStack",
     env={
         "region": os.environ["CDK_DEFAULT_REGION"],
         "account": os.environ["CDK_DEFAULT_ACCOUNT"]

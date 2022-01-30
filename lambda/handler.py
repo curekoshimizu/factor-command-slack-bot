@@ -1,46 +1,50 @@
 import os
 from slack_bolt import App
 from slack_bolt.adapter.aws_lambda import SlackRequestHandler
-import time
+from sympy.ntheory import factorint
 
 
 app = App(process_before_response=True,
-    token=os.environ["SLACK_BOT_TOKEN"],
+    token=os.environ["SLACK_BOT_TOKEN"], 
     signing_secret=os.environ["SLACK_SIGNING_SECRET"]
 )
 
 
-@app.message("hello")
-def message_hello(message, say):
-    # イベントがトリガーされたチャンネルへ say() でメッセージを送信します
-    say(
-        blocks=[
-            {
-                "type": "section",
-                "text": {"type": "mrkdwn", "text": "こんにちは！"},
-                "accessory": {
-                    "type": "button",
-                    "text": {"type": "plain_text", "text":"ボタンを押す"},
-                    "action_id": "button_click"
-                }
-            }
-        ],
-        text=f"Hey there <@{message['user']}>!"
-    )
+def _prime_factorization(n):
+    ret_message = f"{n} = "
+    try:
+        is_first_element = True
+        d = factorint(n)
+        assert len(d) > 0
+        for p in sorted(d.keys()):
+            count = d[p]
+            while count > 0:
+                if is_first_element:
+                    ret_message += str(p)
+                    is_first_element = False
+                else:
+                    ret_message += f" * {p}"
+                count -= 1
+    except Exception:
+        ret_message = f"{n} is invalid argument."
+    return ret_message
 
-def action_button_click(body,ack,say):
-    time.sleep(3)
-    say("ボタンおして、3秒経過したよ！")
 
-def demo1(body,ack,say):
-    say("ボタン押したよ！")
-    ack("ボタン！")
+@app.event("app_mention")
+def handle_mention(body, say, logger):
+    user = body["event"]["user"]
+    message = body["event"]["text"]
+    for text in reversed(message.split(" ")):
+        try:
+            n = int(text)
+            break
+        except Exception:
+            pass
+    else:
+        say("Invalid message")
 
-app.action("button_click")(
-    ack=demo1,
-    lazy=[action_button_click]
-)
-
+    ret_message = _prime_factorization(n)
+    say(f"<@{user}> {ret_message}")
 
 def handler(event, context):
     slack_handler = SlackRequestHandler(app=app)
