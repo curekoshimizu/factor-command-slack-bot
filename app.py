@@ -4,22 +4,39 @@ from aws_cdk import (
     aws_lambda as _lambda,
     aws_apigateway as apigw
 )
+from aws_cdk.aws_lambda import DockerImageFunction, DockerImageCode
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class HelloMessageStack(core.Stack):
 
     def __init__(self, scope: core.App, name: str, **kwargs) -> None:
         super().__init__(scope, name, **kwargs)
 
-        lambda_func = _lambda.Function(
-            self, "HelloMessageFunc",
-            code=_lambda.Code.from_asset("lambda"),
-            handler="handler.handler",
-            runtime=_lambda.Runtime.PYTHON_3_8,
-        )
-        apigw.LambdaRestApi(scope=self, id="HelloMessageApi", handler=lambda_func)
+        backend = DockerImageFunction(
+            scope=self, id='HelloMessageDocker', code=DockerImageCode.from_image_asset(
+                directory='lambda',
+            ), 
+            memory_size=128,  # default 128MB
+            timeout=core.Duration.seconds(3), # default 3 sec
+            environment= {
+                "SLACK_BOT_TOKEN": os.environ["SLACK_BOT_TOKEN"],
+                "SLACK_SIGNING_SECRET": os.environ["SLACK_SIGNING_SECRET"],
+            })
 
-        # api = apigw.RestApi(self, "HelloMessageApi")
-        # api.root.add_method("GET", apigw.LambdaIntegration(lambda_func))
+
+        # backend = _lambda.Function(
+        #     self, "HelloMessageFunc",
+        #     code=_lambda.Code.from_asset("lambda"),
+        #     handler="handler.handler",
+        #     runtime=_lambda.Runtime.PYTHON_3_8,
+        #     environment= {
+        #         "SLACK_BOT_TOKEN": os.environ["SLACK_BOT_TOKEN"],
+        #         "SLACK_SIGNING_SECRET": os.environ["SLACK_SIGNING_SECRET"],
+        #     },
+        # )
+        apigw.LambdaRestApi(scope=self, id="HelloMessageApi", handler=backend)
 
 app = core.App()
 
