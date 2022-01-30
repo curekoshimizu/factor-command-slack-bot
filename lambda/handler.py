@@ -11,6 +11,8 @@ app = App(process_before_response=True,
 
 
 def _prime_factorization(n):
+    if n < 2:
+        return f"Argument({n}) must be greater than 1."
     ret_message = f"{n} = "
     try:
         is_first_element = True
